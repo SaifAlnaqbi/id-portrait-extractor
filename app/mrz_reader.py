@@ -10,9 +10,11 @@ Each candidate block is deskewed, upscaled and passed to Tesseract using a
 model trained on the MRZ font (OCR-B, app/tessdata/mrz.traineddata from
 DoubangoTelecom/tesseractMRZ, BSD-3) restricted to the MRZ alphabet
 (A-Z, 0-9, '<'). Tesseract's generic English model misreads the '<' filler
-as K/X/S and its errors vary between Tesseract versions; the MRZ model does not. Lines that look like MRZ lines are parsed
-and validated with check digits; the candidate with the most passing checks wins.
-If no candidate region works, the lower half and the whole image are tried.
+as K/X/S and its errors vary between Tesseract versions; the MRZ model does not.
+
+Lines that look like MRZ lines are parsed and validated with check digits; the
+candidate with the most passing checks wins. If no candidate region works, the
+lower half and the whole image are tried.
 """
 
 import os

@@ -17,8 +17,6 @@ import re
 from dataclasses import dataclass, field
 from datetime import date
 
-MRZ_CHARS = re.compile(r"^[A-Z0-9<]+$")
-
 _TO_DIGIT = str.maketrans({"O": "0", "Q": "0", "D": "0", "U": "0", "I": "1", "L": "1", "Z": "2", "S": "5", "G": "6", "B": "8"})
 _TO_ALPHA = str.maketrans({"0": "O", "1": "I", "2": "Z", "5": "S", "6": "G", "8": "B"})
 # Characters OCR commonly swaps inside alphanumeric fields (document numbers).
