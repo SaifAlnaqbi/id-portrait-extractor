@@ -6,8 +6,11 @@ Localisation (classic morphology approach):
     Otsu threshold -> closing with a square kernel so the 2-3 lines merge into
     one block -> contours filtered by aspect ratio/size.
 
-Each candidate block is deskewed, upscaled and passed to Tesseract restricted
-to the MRZ alphabet (A-Z, 0-9, '<'). Lines that look like MRZ lines are parsed
+Each candidate block is deskewed, upscaled and passed to Tesseract using a
+model trained on the MRZ font (OCR-B, app/tessdata/mrz.traineddata from
+DoubangoTelecom/tesseractMRZ, BSD-3) restricted to the MRZ alphabet
+(A-Z, 0-9, '<'). Tesseract's generic English model misreads the '<' filler
+as K/X/S and its errors vary between Tesseract versions; the MRZ model does not. Lines that look like MRZ lines are parsed
 and validated with check digits; the candidate with the most passing checks wins.
 If no candidate region works, the lower half and the whole image are tried.
 """
@@ -15,6 +18,7 @@ If no candidate region works, the lower half and the whole image are tried.
 import os
 import shutil
 from dataclasses import dataclass
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -25,6 +29,8 @@ from app.portrait_extractor import decode_image
 
 WORK_WIDTH = 1200
 OCR_WIDTH = 1600
+OCR_LANG = "mrz"
+TESSDATA_DIR = Path(__file__).resolve().parent / "tessdata"
 _OCR_CONFIG = (
     "--oem 1 --psm 6 "
     "-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789< "
@@ -47,6 +53,10 @@ def _configure_tesseract() -> None:
         cmd = _WINDOWS_DEFAULT
     if cmd:
         pytesseract.pytesseract.tesseract_cmd = cmd
+    # Point Tesseract at the bundled MRZ model. Done via the environment rather
+    # than --tessdata-dir because pytesseract splits the config string on spaces,
+    # which breaks paths like "C:/Users/.../Python Proj/...".
+    os.environ["TESSDATA_PREFIX"] = str(TESSDATA_DIR)
 
 
 _configure_tesseract()
@@ -147,7 +157,7 @@ def _parse_best(lines: list[str]) -> MRZResult | None:
 
 
 def _ocr(image: np.ndarray) -> str:
-    return pytesseract.image_to_string(image, lang="eng", config=_OCR_CONFIG)
+    return pytesseract.image_to_string(image, lang=OCR_LANG, config=_OCR_CONFIG)
 
 
 def read_mrz_from_image(image: np.ndarray) -> MRZResult:

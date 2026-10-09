@@ -54,7 +54,7 @@ flowchart LR
 | Web framework | **FastAPI** + Uvicorn | Automatic request validation and interactive OpenAPI/Swagger docs (`/docs`) from the type hints; async-capable; minimal boilerplate |
 | Face detection | **MediaPipe Face Detection** (BlazeFace, full-range model) | Accurate on small/blurred faces and low-contrast printed photos, runs fast on CPU (~20–40 ms), ships its model inside the wheel (no downloads), returns **eye keypoints** used for deskewing |
 | Image processing | **OpenCV** | Decoding (incl. EXIF orientation), rotation, morphology for MRZ localisation, JPEG encoding |
-| OCR | **Tesseract 5** (LSTM) via `pytesseract` | Free, small (~30 MB apt package), runs on CPU, supports a character whitelist — ideal for the restricted MRZ alphabet |
+| OCR | **Tesseract 5** (LSTM) via `pytesseract`, with an **MRZ-trained model** (`mrz.traineddata`, [DoubangoTelecom/tesseractMRZ](https://github.com/DoubangoTelecom/tesseractMRZ), BSD-3) | Free, small, runs on CPU, supports a character whitelist. The bundled model is trained on the OCR-B MRZ font, so it reads the `<` filler reliably |
 | Container | `python:3.11-slim` | Small base image with wheels available for every dependency |
 | Hosting | **Render** (free Docker web service) | Builds directly from the repository's Dockerfile, HTTPS out of the box, auto-deploy on push |
 | CI | **GitHub Actions** | Runs the test suite, builds the image and publishes it to GitHub Container Registry |
@@ -159,7 +159,7 @@ flowchart TD
     E --> F[Contours → minAreaRect<br/>keep long thin regions: aspect ≥ 4, width ≥ 25% of image]
     F --> G[For each candidate + fallbacks<br/>bottom half, full image]
     G --> H[Rotate region level, upscale to 1600 px, Otsu binarise]
-    H --> I[Tesseract LSTM, psm 6<br/>whitelist A-Z 0-9 &lt;, dictionaries off]
+    H --> I[Tesseract LSTM + MRZ-trained model, psm 6<br/>whitelist A-Z 0-9 &lt;, dictionaries off]
     I --> J[Keep lines ≥ 26 chars of MRZ alphabet<br/>try every run of 2-3 consecutive lines]
     J --> K[Parse TD1/TD2/TD3 + validate check digits]
     K --> L[Return candidate with most passing checks]
@@ -167,7 +167,9 @@ flowchart TD
 
 ### 4.3 Making OCR robust
 
-Tesseract's general English model is not trained on the OCR-B font, so it makes predictable mistakes. The parser repairs them using the structure of the MRZ:
+**Choosing the OCR model.** The first version used Tesseract's general English model. It is not trained on the OCR-B font and misread the `<` filler as `K`, `X`, `S` or `R`, and the exact errors changed between Tesseract versions (5.4 on Windows vs 5.3 on Ubuntu CI gave different name lines for the same image). We therefore bundle `app/tessdata/mrz.traineddata`, a Tesseract model trained specifically on MRZ text. On the four passport specimens it reads every MRZ line character-perfect across all 6 preprocessing variants we tried (3 scales × gray/binarised), where the English model was wrong in most of them.
+
+The parser still defends against residual OCR errors (photos, blur, other OCR engines) using the structure of the MRZ:
 
 | Problem | Fix |
 |---|---|
@@ -243,7 +245,7 @@ flowchart LR
 |---|---|
 | The crop is framed around the face, not snapped to the printed photo's rectangle | Detect the photo border with edge/contour analysis near the face and crop exactly to it |
 | Strong perspective (card photographed at a steep angle) is only corrected in-plane | Detect the card's four corners and apply a perspective warp before processing |
-| A real name initial `K` directly followed by fillers would be read as filler | Use OCR-B trained Tesseract data (`ocrb`/`mrz.traineddata`) to remove the `<`→`K` confusion at the source |
+| The `K`-filler safeguard would turn a genuine single-letter name initial `K` followed by fillers into filler | Rarely triggered now that the MRZ-trained model no longer produces `K` for `<`; could be made conditional on low OCR confidence |
 | Only the MRZ is used for fields | OCR the visual inspection zone (VIZ) and cross-check against the MRZ; read the chip (NFC) for full authenticity |
 | No liveness / tamper detection | Out of scope; would need specialised models |
 | Free hosting tier sleeps when idle (first request ~30–60 s) | Paid tier / min-instances on Cloud Run |

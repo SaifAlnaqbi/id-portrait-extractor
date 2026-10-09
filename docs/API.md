@@ -154,7 +154,7 @@ curl -X POST https://id-portrait-extractor.onrender.com/extract-fields \
   },
   "raw_mrz": [
     "P<NOROESTENBYEN<<AASAMUND<SPECIMEN<<<<<<<<<<",
-    "CCC0022514N0R5604230M3004157<<<<<<<<<<<<<<04"
+    "CCC0022514NOR5604230M3004157<<<<<<<<<<<<<<04"
   ]
 }
 ```

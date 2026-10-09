@@ -18,7 +18,7 @@ A FastAPI service that takes a photo or scan of an **ID card or passport**, extr
   - recovers **sideways / upside-down** images
   - frames the result like an ID photo (**3:4**, head and shoulders)
 - **MRZ field extraction** (bonus) for passports (TD3) and ID cards (TD1/TD2)
-  - morphology-based MRZ localisation + Tesseract OCR
+  - morphology-based MRZ localisation + Tesseract OCR with a bundled **MRZ-trained model**
   - check-digit validation and **automatic OCR error correction** (O/0, I/1, S/5, `<`/K …)
 - Two input styles: **multipart upload** or **base64 JSON** (data-URLs accepted)
 - Clear error codes (400 / 413 / 422 / 503), 10 MB upload limit, interactive Swagger docs
@@ -118,6 +118,7 @@ app/
   schemas.py             Pydantic request/response models
   portrait_extractor.py  Face detection, orientation recovery, deskew, 3:4 framing
   mrz_reader.py          MRZ localisation + Tesseract OCR
+  tessdata/              mrz.traineddata (MRZ OCR model, BSD-3, DoubangoTelecom/tesseractMRZ)
   mrz.py                 ICAO 9303 MRZ parser, check digits, OCR error correction
 tests/                   pytest suite (API, portrait pipeline, MRZ parser)
 sample_images/           Test images: Albanian ID card photos + public passport specimens
