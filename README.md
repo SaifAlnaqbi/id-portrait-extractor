@@ -5,7 +5,8 @@ A FastAPI service that takes a photo or scan of an **ID card or passport**, extr
 | | |
 |---|---|
 | 🌐 **Live API** | https://id-portrait-extractor.onrender.com/docs *(free tier: first request after idle takes ~30–60 s)* |
-| 🐳 **Docker image** | `ghcr.io/<github-user>/id-portrait-extractor:latest` |
+| 🐳 **Docker image** | `ghcr.io/saifalnaqbi/id-portrait-extractor:latest` |
+| 💻 **Source** | https://github.com/SaifAlnaqbi/id-portrait-extractor |
 | 📐 **Design document** | [docs/DESIGN.md](docs/DESIGN.md) |
 | 📖 **API documentation** | [docs/API.md](docs/API.md) |
 
@@ -41,7 +42,7 @@ Or open **[/docs](https://id-portrait-extractor.onrender.com/docs)** and use *Tr
 
 ```bash
 # pre-built image
-docker run -p 8000:8000 ghcr.io/<github-user>/id-portrait-extractor:latest
+docker run -p 8000:8000 ghcr.io/saifalnaqbi/id-portrait-extractor:latest
 
 # or build it yourself
 docker build -t id-portrait-extractor .
