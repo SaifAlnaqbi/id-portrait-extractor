@@ -1,0 +1,14 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Render builds the Dockerfile from this repo and redeploys on every push to main.
+services:
+  - type: web
+    name: id-portrait-extractor
+    runtime: docker
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: MAX_UPLOAD_MB
+        value: "10"

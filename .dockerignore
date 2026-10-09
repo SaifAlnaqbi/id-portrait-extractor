@@ -1,0 +1,13 @@
+__pycache__
+*.pyc
+.venv
+.git
+.github
+.gitignore
+.pytest_cache
+.claude
+tests
+sample_images
+docs
+*.md
+render.yaml

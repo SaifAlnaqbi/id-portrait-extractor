@@ -1,0 +1,10 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+pydantic==2.9.2
+# mediapipe depends on opencv-contrib-python, so pin that one instead of a second
+# (headless) OpenCV build - two OpenCV wheels overwrite each other's cv2 module.
+mediapipe==0.10.14
+opencv-contrib-python==4.10.0.84
+numpy==1.26.4
+pytesseract==0.3.13
